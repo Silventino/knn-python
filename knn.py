@@ -76,23 +76,33 @@ def calculaAcuracia(instanciasTeste, predicoes, nomes, matrizConfusao={}):
     return (corretas/float(len(instanciasTeste))) * 100.0
 
 def calculaRecall(matrizConfusao, nomes):
-    total = 0
+    resultado = []
     for nome in nomes:
+        total = 0
         verdadeiroPositivo = matrizConfusao[nome][nome]
         for n in nomes:
             total += matrizConfusao[nome][n]
-    return ((verdadeiroPositivo / total)*100)
+        # print(str(verdadeiroPositivo) + "/" + str(total))
+        resultado.append(((verdadeiroPositivo / total)*100))
+    return resultado
 
-    # matrizConfusao['Iris-versicolor'] = {'Iris-versicolor': 0, 'Iris-setosa': 0, 'Iris-virginica': 0}
-    # matrizConfusao['Iris-virginica'] = {'Iris-versicolor': 0, 'Iris-setosa': 0, 'Iris-virginica': 0}
-    # matrizConfusao['Iris-setosa'] = {'Iris-versicolor': 0, 'Iris-setosa': 0, 'Iris-virginica': 0}
+def calculaPrecisao(matrizConfusao, nomes):
 
+    resultado = []
+    for nome in nomes:
+        total = 0
+        verdadeiroPositivo = matrizConfusao[nome][nome]
+        for n in nomes:
+            total += matrizConfusao[n][nome]
+        # print(str(verdadeiroPositivo) + "/" + str(total))
+        resultado.append((verdadeiroPositivo / total)*100)
+    return resultado
     
     
 def imprimeMatrizConfusao(matriz, nomes):
     print("\nTabela de Confusao")
     print("====================="*(len(nomes)+1))
-    print("{:^20} |".format(''), end='')
+    print("{:^20} |".format('Real \ Previsto'), end='')
     for nome in nomes:
         print("{:^20s}|".format(nome),  end='')
     print()
@@ -100,8 +110,8 @@ def imprimeMatrizConfusao(matriz, nomes):
     
     for k in matriz:
         print("{:20s} ".format(k), end = '')
-        for nome in nomes:
-            print('|{:^20d}'.format(matriz[k][nome]), end='')
+        for k2 in matriz[k]:
+            print('|{:^20d}'.format(matriz[k][k2]), end='')
         print("|")
         #~ print(str(k) + ": ", end='')
         # print('|{:^20d}|{:^20d}|{:^20d}|'.format(matriz[k][nomes[0]], matriz[k][nomes[1]], matriz[k][nomes[2]]))
@@ -140,8 +150,14 @@ def main():
         matrizConfusao = {}
         acuracia = calculaAcuracia(instanciasTeste, predicoes, nomes, matrizConfusao)
         print('Acuraria: ' + str(acuracia) + '%')
+        precision = calculaPrecisao(matrizConfusao, nomes)
+        print('\nPrecisao: ')
+        for i in range(len(nomes)):
+            print(nomes[i] + ": " + str(precision[i]) + "%")
         recall = calculaRecall(matrizConfusao, nomes)
-        print('Recall: ' + str(recall) + '%\n')
+        print('\nRecall: ')
+        for i in range(len(nomes)):
+            print(nomes[i] + ": " + str(recall[i])+ "%")
         
 main()
 
