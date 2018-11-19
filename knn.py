@@ -8,20 +8,24 @@ import pprint
 def distanciaEuclidiana(instancia1, instancia2, qntValores):
     distancia = 0
     for x in range(qntValores):
-        distancia += pow((instancia1[x] - instancia2[x]), 2)
+
+        distancia += pow(float(instancia1[x]) - float(instancia2[x]), 2)
     return math.sqrt(distancia)
 
-def carregarDataSet(nomeDoArquivo, porcentagemTreino, instanciasTreino=[] , instanciasTeste=[]):
+def carregarDataSet(nomeDoArquivo, porcentagemTreino, instanciasTreino=[] , instanciasTeste=[], nomes=[]):
     with open(nomeDoArquivo, 'r') as csvfile:
         linhas = csv.reader(csvfile)
         dados = list(linhas)
         for x in range(len(dados)-1):
+            if(dados[x][-1] not in nomes):
+                nomes.append(dados[x][-1])
             for y in range(4):
                 dados[x][y] = float(dados[x][y])
             if random.random() < porcentagemTreino:
                 instanciasTreino.append(dados[x])
             else:
                 instanciasTeste.append(dados[x])
+        print(nomes)
 
 def getKVizinhosMaisProximos(instanciasTreino, instanciaTeste, k):
     distancias = []
@@ -47,14 +51,21 @@ def getResultado(vizinhos):
     votosOrdenaos = sorted(iter(possiveisClasses.items()), key=operator.itemgetter(1), reverse=True)
     return votosOrdenaos[0][0]  # o resultado será a classe mais votada
     
-def calculaAcuracia(instanciasTeste, predicoes):
+def calculaAcuracia(instanciasTeste, predicoes, nomes):
     corretas = 0
     
     matrizConfusao = {}
-    
-    matrizConfusao['Iris-versicolor'] = {'Iris-versicolor': 0, 'Iris-setosa': 0, 'Iris-virginica': 0}
-    matrizConfusao['Iris-virginica'] = {'Iris-versicolor': 0, 'Iris-setosa': 0, 'Iris-virginica': 0}
-    matrizConfusao['Iris-setosa'] = {'Iris-versicolor': 0, 'Iris-setosa': 0, 'Iris-virginica': 0}
+    for nome in nomes:
+        matrizConfusao[nome] = {}
+        for n in nomes:
+            matrizConfusao[nome][n] = 0
+
+
+
+    # matrizConfusao['Iris-versicolor'] = {'Iris-versicolor': 0, 'Iris-setosa': 0, 'Iris-virginica': 0}
+    # matrizConfusao['Iris-virginica'] = {'Iris-versicolor': 0, 'Iris-setosa': 0, 'Iris-virginica': 0}
+    # matrizConfusao['Iris-setosa'] = {'Iris-versicolor': 0, 'Iris-setosa': 0, 'Iris-virginica': 0}
+
     for x in range(len(instanciasTeste)):
         matrizConfusao[instanciasTeste[x][-1]][predicoes[x]] += 1
         
@@ -62,31 +73,38 @@ def calculaAcuracia(instanciasTeste, predicoes):
             corretas += 1
     #~ print(corretas)
     
-    imprimeMatrizConfusao(matrizConfusao)
+    imprimeMatrizConfusao(matrizConfusao, nomes)
     
     #~ pprint.pprint(matrizConfusao)
     return (corretas/float(len(instanciasTeste))) * 100.0
     
-def imprimeMatrizConfusao(matriz):
+def imprimeMatrizConfusao(matriz, nomes):
     print("\nTabela de Confusao")
-    print("---------------------------------------------------------------------")
-    print("{:^20s} {:^20s} {:^20s} {:^20s}".format('', 'Iris-versicolor', 'Iris-virginica', 'Iris-setosa'))
+    print("======================================================================================")
+    print("{:^20}".format(''), end='')
+    for nome in nomes:
+        print()
+        print(" {:^20s}|".format(nome),  end='')
+    print()
+    print("======================================================================================")
     
     for k in matriz:
         print("{:20s} ".format(k), end = '')
         
         #~ print(str(k) + ": ", end='')
-        print('{:^20d}{:^20d}{:^20d}'.format(matriz[k]['Iris-versicolor'], matriz[k]['Iris-virginica'], matriz[k]['Iris-setosa']))
+        print('|{:^20d}|{:^20d}|{:^20d}|'.format(matriz[k][nomes[0]], matriz[k][nomes[1]], matriz[k][nomes[2]]))
         #~ print()
-    print("---------------------------------------------------------------------")
+    print("======================================================================================")
     print()
 
 def main():
+    
     # prepare data
     instanciasTreino = []
     instanciasTeste = []
-    porcentagemTreino = 0.70
-    carregarDataSet('iris.data', porcentagemTreino, instanciasTreino, instanciasTeste)
+    nomes = []
+    porcentagemTreino = 0.99
+    carregarDataSet('spambase.data', porcentagemTreino, instanciasTreino, instanciasTeste, nomes)
     print('Tamanho do treino: ' + str(len(instanciasTreino)))
     print('Tamanho dos testes: ' + str(len(instanciasTeste)))
 
@@ -95,6 +113,7 @@ def main():
     for i in range(4):
         predicoes = []
         k = (i*2)+1
+        print("*****************************************************************************************")
         print("k= " + str(k))
         for x in range(len(instanciasTeste)):
             #~ print(k)
@@ -103,9 +122,9 @@ def main():
             resultado = getResultado(vizinhos)
             predicoes.append(resultado)
             # print('predição = ' + repr(resultado) + ', resposta correta = ' + repr(instanciasTeste[x][-1]))
-        acuracia = calculaAcuracia(instanciasTeste, predicoes)
-        print('Acuraria: ' + str(acuracia) + '%')
-    
+        acuracia = calculaAcuracia(instanciasTeste, predicoes, nomes)
+        print('Acuraria: ' + str(acuracia) + '%\n')
+        
 main()
 
 # i = []
